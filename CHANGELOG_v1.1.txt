@@ -1,0 +1,108 @@
+CHANGELOG v1.1 - Controle de Patrimônio
+========================================
+Data: 2024-12-08
+Autor: Sistema
+
+═══════════════════════════════════════════════════════════════════════════════
+
+[1] Code.gs - Backend Google Apps Script
+────────────────────────────────────────────────────────────────────────────────
+
+ANTES (v1.0):
+- handleUpdate() sem proteção contra escrita concorrente
+- Colunas: 'Idade', 'Tipo'
+- Sem action 'ping' para teste de conexão
+- Validação básica do índice da linha
+
+DEPOIS (v1.1):
+- handleUpdate() agora usa LockService.getScriptLock() para evitar conflitos
+- Colunas atualizadas: 'Idade do Equipamento (em anos)', 'Tipo de Item'
+- Adicionada action 'ping' para verificar se API está online
+- Validação robusta: verifica se índice ainda corresponde à máquina correta
+- SpreadsheetApp.flush() para garantir gravação imediata
+- Retorno inclui lista de alterações e data/hora
+
+MOTIVO:
+- LockService previne corrupção de dados quando múltiplos usuários editam
+- Nomes de colunas alinhados com especificação do banco de dados
+- Ping permite health check da API pelo frontend
+
+ARQUIVOS:
+- c:\Users\aliss\Desktop\Controle de Patrimonio GIT\Code.gs
+
+═══════════════════════════════════════════════════════════════════════════════
+
+[2] app.py - Frontend Streamlit
+────────────────────────────────────────────────────────────────────────────────
+
+ANTES (v1.0):
+- Sem preview de alterações antes de salvar
+- Template de email básico
+- Colunas: 'Idade', 'Tipo'
+- Sem teste de conexão com API
+- Timeout de 30 segundos
+
+DEPOIS (v1.1):
+- Adicionado botão "Preview" que mostra diff visual (vermelho/verde)
+- Template de email profissional com formatação aprimorada
+- Colunas atualizadas: 'Idade do Equipamento (em anos)', 'Tipo de Item'
+- Botão "Testar Conexão API" na sidebar
+- Timeout aumentado para 60 segundos
+- Formulário reorganizado em 3 tabs: Localização, Hardware, Patrimônio
+- CSS aprimorado com classes .diff-old e .diff-new
+- Função testar_conexao_api() para health check
+- Função calcular_diferencas() separada da geração de email
+- Função exibir_preview_alteracoes() para visualização antes de salvar
+
+MOTIVO:
+- Preview evita erros do usuário ao mostrar exatamente o que será alterado
+- Email profissional facilita comunicação formal das alterações
+- Organização em tabs melhora UX para formulários grandes
+- Health check ajuda diagnóstico de problemas de conexão
+
+ARQUIVOS:
+- c:\Users\aliss\Desktop\Controle de Patrimonio GIT\app.py
+
+═══════════════════════════════════════════════════════════════════════════════
+
+[3] requirements.txt
+────────────────────────────────────────────────────────────────────────────────
+
+STATUS: Sem alterações (mantido conforme v1.0)
+
+CONTEÚDO:
+- streamlit>=1.28.0
+- requests>=2.31.0
+- pandas>=2.0.0
+
+═══════════════════════════════════════════════════════════════════════════════
+
+CHECKLIST DO PROJETO
+────────────────────────────────────────────────────────────────────────────────
+
+[x] requirements.txt criado
+[x] Code.gs com doGet/doPost implementado
+[x] Code.gs com LockService para concorrência
+[x] Action: login implementada
+[x] Action: get_data implementada
+[x] Action: update com log implementada
+[x] Action: ping para health check
+[x] app.py com tela de login
+[x] app.py com busca/filtro de equipamentos
+[x] app.py com formulário de edição
+[x] app.py com lógica de diff/preview
+[x] app.py com geração de email
+[x] Tratamento de erros robusto
+[x] CHANGELOG gerado
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PRÓXIMOS PASSOS
+────────────────────────────────────────────────────────────────────────────────
+
+1. Executar comandos PowerShell para configurar ambiente
+2. Copiar Code.gs para Google Apps Script e reimplantar
+3. Testar login com credenciais válidas
+4. Testar fluxo completo: buscar → editar → salvar → email
+
+═══════════════════════════════════════════════════════════════════════════════

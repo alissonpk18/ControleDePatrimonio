@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Controle de Patrimônio</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>">
+    
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-vh-100 d-flex align-items-center justify-content-center bg-gradient-primary">
+        <div class="card shadow-lg border-0" style="max-width: 420px; width: 100%;">
+            <div class="card-header bg-primary text-white text-center py-4">
+                <h2 class="mb-1"><i class="bi bi-pc-display"></i> Controle de Patrimônio</h2>
+                <small class="opacity-75">Sistema de Gestão de Ativos de TI</small>
+            </div>
+            <div class="card-body p-4">
+                <!-- Status da API -->
+                <div id="api-status" class="alert alert-secondary text-center mb-3">
+                    <span class="spinner-border spinner-border-sm"></span> Verificando conexão com a API...
+                </div>
+                
+                <!-- Erro de API Offline -->
+                <div id="api-error" class="alert alert-danger d-none">
+                    <h5><i class="bi bi-exclamation-triangle-fill"></i> API Offline</h5>
+                    <p class="mb-2">Não foi possível conectar ao servidor. Verifique:</p>
+                    <ul class="mb-2">
+                        <li>Se você fez o deploy do <strong>Code.gs</strong> no Google Apps Script</li>
+                        <li>Se a URL da API está correta no <strong>config.js</strong></li>
+                        <li>Se o deploy está como <strong>"Anyone"</strong> pode acessar</li>
+                    </ul>
+                    <small class="text-muted" id="api-error-detail"></small>
+                </div>
+                
+                <h5 class="text-center mb-4"><i class="bi bi-shield-lock"></i> Acesso ao Sistema</h5>
+                
+                <form id="login-form">
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-person"></i> Usuário</label>
+                        <input type="text" id="usuario" class="form-control form-control-lg" placeholder="Digite seu usuário" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-key"></i> Senha</label>
+                        <input type="password" id="senha" class="form-control form-control-lg" placeholder="Digite sua senha" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100" id="btn-login">
+                        <i class="bi bi-box-arrow-in-right"></i> Entrar
+                    </button>
+                    <div id="login-error" class="alert alert-danger mt-3 d-none"></div>
+                </form>
+            </div>
+            <div class="card-footer bg-light text-center py-3">
+                <small class="text-muted"><i class="bi bi-info-circle"></i> Contate o administrador caso não possua acesso.</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- App JS Modules -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    
+    <script>
+        // Verifica se já está autenticado
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Redireciona se já estiver logado
+            if (redirectIfAuthenticated()) return;
+            
+            // Verifica status da API
+            await checkAPIStatus();
+            
+            // Setup do formulário de login
+            setupLoginForm();
+        });
+        
+        async function checkAPIStatus() {
+            const statusDiv = document.getElementById('api-status');
+            const errorDiv = document.getElementById('api-error');
+            const btnLogin = document.getElementById('btn-login');
+            
+            try {
+                const online = await testarConexaoAPI();
+                
+                if (online) {
+                    statusDiv.className = 'alert alert-success text-center mb-3';
+                    statusDiv.innerHTML = '<i class="bi bi-check-circle-fill"></i> API Online - Conectado ao servidor';
+                    errorDiv.classList.add('d-none');
+                    btnLogin.disabled = false;
+                } else {
+                    statusDiv.className = 'alert alert-danger text-center mb-3';
+                    statusDiv.innerHTML = '<i class="bi bi-x-circle-fill"></i> API Offline';
+                    errorDiv.classList.remove('d-none');
+                    btnLogin.disabled = true;
+                }
+            } catch (error) {
+                statusDiv.className = 'alert alert-danger text-center mb-3';
+                statusDiv.innerHTML = '<i class="bi bi-x-circle-fill"></i> Erro de conexão';
+                errorDiv.classList.remove('d-none');
+                document.getElementById('api-error-detail').textContent = error.message;
+                btnLogin.disabled = true;
+            }
+        }
+        
+        function setupLoginForm() {
+            const form = document.getElementById('login-form');
+            const btnLogin = document.getElementById('btn-login');
+            const loginError = document.getElementById('login-error');
+            
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const usuario = document.getElementById('usuario').value.trim();
+                const senha = document.getElementById('senha').value;
+                
+                if (!usuario || !senha) {
+                    loginError.textContent = 'Preencha todos os campos';
+                    loginError.classList.remove('d-none');
+                    return;
+                }
+                
+                // Desabilita botão e mostra loading
+                btnLogin.disabled = true;
+                btnLogin.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Entrando...';
+                loginError.classList.add('d-none');
+                
+                try {
+                    const response = await login(usuario, senha);
+                    
+                    if (response.autenticado) {
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        loginError.textContent = response.message || 'Credenciais inválidas';
+                        loginError.classList.remove('d-none');
+                    }
+                } catch (error) {
+                    loginError.textContent = 'Erro ao fazer login';
+                    loginError.classList.remove('d-none');
+                } finally {
+                    btnLogin.disabled = false;
+                    btnLogin.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Entrar';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

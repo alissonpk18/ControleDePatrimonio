@@ -1,0 +1,103 @@
+/* =====================================================
+   CONTROLE DE PATRIMÔNIO - CSS (Bootstrap Enhancement)
+   ===================================================== */
+
+/* Custom gradient background */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* Sidebar styling */
+.sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+/* Card hover effects */
+.card {
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Table improvements */
+.table-responsive {
+    max-height: 400px;
+}
+
+.table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Diff styling */
+.diff-old {
+    background-color: #ffecec;
+    color: #c0392b;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    text-decoration: line-through;
+}
+
+.diff-new {
+    background-color: #e8f8e8;
+    color: #27ae60;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+/* Stats cards */
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    padding: 1.5rem;
+    color: white;
+    text-align: center;
+}
+
+.stat-card h3 {
+    font-size: 2.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.stat-card p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+/* Navigation buttons active state */
+.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Pre tag for email */
+pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Toast styling */
+.toast-custom {
+    min-width: 300px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        position: relative;
+        height: auto;
+        width: 100% !important;
+    }
+    
+    #dashboard-container > .d-flex {
+        flex-direction: column;
+    }
+}
