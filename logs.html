@@ -177,30 +177,57 @@
         
         async function carregarLogs() {
             const btnAtualizar = document.getElementById('btn-atualizar');
+            const filtro = document.getElementById('filtro-busca').value;
+            
             btnAtualizar.disabled = true;
             btnAtualizar.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
             
             try {
-                // Aqui você implementaria a chamada para buscar logs
-                // Por enquanto, mostra mensagem de placeholder
-                const tbody = document.getElementById('table-body');
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center py-5 text-muted">
-                            <i class="bi bi-info-circle fs-1"></i>
-                            <p class="mt-2">Funcionalidade de logs em desenvolvimento</p>
-                            <small>Configure a API para retornar dados da aba "Logs"</small>
-                        </td>
-                    </tr>
-                `;
+                logs = await getLogs(filtro);
+                renderTabela();
                 
-                showToast('Logs carregados', 'info');
+                if (logs.length > 0) {
+                    showToast(`${logs.length} logs carregados`, 'success');
+                } else {
+                    showToast('Nenhum log encontrado', 'info');
+                }
             } catch (error) {
+                console.error(error);
                 showToast('Erro ao carregar logs', 'error');
             } finally {
                 btnAtualizar.disabled = false;
                 btnAtualizar.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Atualizar';
             }
+        }
+        
+        function renderTabela() {
+            const tbody = document.getElementById('table-body');
+            const contador = document.getElementById('contador-logs');
+            
+            contador.textContent = `${logs.length} registro(s)`;
+            
+            if (logs.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">Nenhum registro encontrado</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td>${formatarDataHora(log['Data'])}</td>
+                    <td>${log['Usuário'] || '-'}</td>
+                    <td><strong>${log['Máquina'] || '-'}</strong></td>
+                    <td>${log['Campo'] || '-'}</td>
+                    <td class="text-danger"><small>${log['Valor Antigo'] || '(vazio)'}</small></td>
+                    <td class="text-success"><strong>${log['Valor Novo'] || '(vazio)'}</strong></td>
+                </tr>
+            `).join('');
         }
     </script>
 </body>

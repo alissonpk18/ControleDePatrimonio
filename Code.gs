@@ -35,6 +35,9 @@ function handleRequest(e) {
       case "login":
         return handleLogin(params);
 
+      case "get_logs":
+        return handleGetLogs(params);
+        
       case "get_data":
         return handleGetData(params);
 
@@ -163,6 +166,79 @@ function handleGetData(params) {
     return jsonResponse({
       status: "error",
       message: "Erro ao buscar dados: " + error.toString(),
+    });
+  }
+}
+
+// =====================================================
+// GET LOGS
+// =====================================================
+
+function handleGetLogs(params) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Logs");
+
+    if (!sheet) {
+      return jsonResponse({
+        status: "success",
+        data: [],
+        message: "Aba Logs ainda não existe (sem registros)",
+      });
+    }
+
+    var data = sheet.getDataRange().getValues();
+    
+    // Se só tem cabeçalho ou está vazia
+    if (data.length <= 1) {
+       return jsonResponse({
+        status: "success",
+        data: [],
+        total: 0
+      });
+    }
+
+    var headers = data[0];
+    var result = [];
+    var filtro = (params.filtro || "").toLowerCase();
+    
+    // Limite de logs para não sobrecarregar (últimos 100)
+    var startIndex = Math.max(1, data.length - 100);
+
+    // Percorre de trás pra frente para pegar os mais recentes primeiro
+    for (var i = data.length - 1; i >= startIndex; i--) {
+      var row = data[i];
+
+      // Cria objeto com os dados
+      var obj = {};
+      for (var j = 0; j < headers.length; j++) {
+        obj[headers[j]] = row[j];
+      }
+
+      // Aplica filtro (busca em todos os campos)
+      var match = !filtro;
+      if (filtro && !match) {
+        for (var k = 0; k < row.length; k++) {
+           if (String(row[k]).toLowerCase().includes(filtro)) {
+             match = true;
+             break;
+           }
+        }
+      }
+
+      if (match) {
+        result.push(obj);
+      }
+    }
+
+    return jsonResponse({
+      status: "success",
+      data: result,
+      total: result.length,
+    });
+  } catch (error) {
+    return jsonResponse({
+      status: "error",
+      message: "Erro ao buscar logs: " + error.toString(),
     });
   }
 }
